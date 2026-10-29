@@ -4,6 +4,3 @@ lightgbm
 numpy
 torch
 tokenizers
-collections 
-urllib.parse 
-torch.nn 
