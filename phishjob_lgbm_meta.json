@@ -1,0 +1,30 @@
+{
+  "model": "LightGBM (Optuna Tuned)",
+  "features": [
+    "urllength",
+    "hasipaddress",
+    "dotcount",
+    "httpsflag",
+    "urlentropy",
+    "tokencount",
+    "subdomaincount",
+    "queryparamcount",
+    "tldlength",
+    "pathlength",
+    "hash",
+    "hyphenindomain",
+    "numberofdigits",
+    "tldpopularity",
+    "suspiciousfileextension",
+    "domainnamelength",
+    "percentagenumericchars",
+    "count_dashes",
+    "count_underscores",
+    "count_slashes",
+    "count_ques",
+    "count_non_alphanumeric",
+    "count_letters"
+  ],
+  "threshold": 0.48,
+  "positive_class": "ClassLabel=1 (phishing)"
+}

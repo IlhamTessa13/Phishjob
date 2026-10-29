@@ -1,0 +1,40 @@
+{
+  "features": [
+    "urllength",
+    "hasipaddress",
+    "dotcount",
+    "httpsflag",
+    "urlentropy",
+    "tokencount",
+    "subdomaincount",
+    "queryparamcount",
+    "tldlength",
+    "pathlength",
+    "hash",
+    "hyphenindomain",
+    "numberofdigits",
+    "tldpopularity",
+    "suspiciousfileextension",
+    "domainnamelength",
+    "percentagenumericchars",
+    "count_dashes",
+    "count_underscores",
+    "count_slashes",
+    "count_ques",
+    "count_non_alphanumeric",
+    "count_letters"
+  ],
+  "ae_weights": "ae_hybrid_s0.pt",
+  "seed": 0,
+  "vocab": 6000,
+  "job_cluster": 0,
+  "cfg": {
+    "MAX_LEN": 64,
+    "D_MODEL": 128,
+    "N_HEAD": 4,
+    "N_LAYER": 3,
+    "D_FF": 256,
+    "Z_DIM": 16,
+    "DROPOUT": 0.1
+  }
+}
