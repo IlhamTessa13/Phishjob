@@ -1,5 +1,6 @@
 
 import json
+import time
 from pathlib import Path
 
 import lightgbm as lgb
@@ -30,19 +31,50 @@ except Exception as e:  # noqa: BLE001
 
 
 def predict_url(raw_url: str) -> dict:
+    # Total waktu pemrosesan di server untuk satu URL
+    total_start = time.perf_counter()
+
+    # 1. Feature extraction (normalisasi URL + pembentukan vektor fitur)
+    feature_start = time.perf_counter()
     url = normalize_url(raw_url)
     x = np.array([feature_vector(url, FEATURE_ORDER)], dtype=np.float64)
-    p = float(booster.predict(x)[0])  # P(ClassLabel = 1 = phishing)
+    feature_ms = (time.perf_counter() - feature_start) * 1000
 
-    if p >= THRESHOLD:
-        res = {"url": url, "label": "Phishing", "confidence": p, "cluster": None}
-        if stage2 is not None:
-            try:
-                res["cluster"] = stage2.predict(url)
-            except Exception as e:  # noqa: BLE001
-                print(f"[WARN] klasterisasi gagal: {e!r}")
-        return res
-    return {"url": url, "label": "Legitimate", "confidence": 1 - p, "cluster": None}
+    # 2. Prediction LightGBM
+    prediction_start = time.perf_counter()
+    p = float(booster.predict(x)[0])  # P(ClassLabel = 1 = phishing)
+    prediction_ms = (time.perf_counter() - prediction_start) * 1000
+
+    # 3. Clustering (hanya dijalankan untuk URL yang diprediksi phishing)
+    cluster_ms = None
+    cluster_error = None
+    cluster_result = None
+
+    if p >= THRESHOLD and stage2 is not None:
+        cluster_start = time.perf_counter()
+        try:
+            cluster_result = stage2.predict(url)
+        except Exception as e:  # noqa: BLE001
+            cluster_error = repr(e)
+            print(f"[WARN] klasterisasi gagal: {e!r}")
+        finally:
+            cluster_ms = (time.perf_counter() - cluster_start) * 1000
+
+    total_ms = (time.perf_counter() - total_start) * 1000
+
+    return {
+        "url": url,
+        "label": "Phishing" if p >= THRESHOLD else "Legitimate",
+        "confidence": p if p >= THRESHOLD else 1 - p,
+        "cluster": cluster_result,
+        "_timings_ms": {
+            "feature_extraction": feature_ms,
+            "prediction": prediction_ms,
+            "clustering": cluster_ms,
+            "total": total_ms,
+            "cluster_error": cluster_error,
+        },
+    }
 
 
 
@@ -353,7 +385,22 @@ def server(input, output, session):
     def result_ui():
         res = result()
         # penanda unik per scan agar scan ulang URL yang sama tetap dianggap hasil baru
-        stamp = T.span(class_="hidden", **{"data-t": str((input.scan() or {}).get("t", ""))})
+        timing = res.get("_timings_ms", {})
+        stamp = T.span(
+            class_="hidden",
+            **{
+                "data-t": str((input.scan() or {}).get("t", "")),
+                "data-feature-ms": str(timing.get("feature_extraction", "")),
+                "data-prediction-ms": str(timing.get("prediction", "")),
+                "data-clustering-ms": (
+                    "" if timing.get("clustering") is None
+                    else str(timing.get("clustering"))
+                ),
+                "data-total-ms": str(timing.get("total", "")),
+                "data-label": str(res.get("label", "")),
+                "data-cluster-error": str(timing.get("cluster_error") or ""),
+            }
+        )
 
         if "error" in res:
             return ui.TagList(stamp, T.div(
