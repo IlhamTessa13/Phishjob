@@ -1,9 +1,4 @@
-"""
-PhishJob Detection — Shiny for Python
-Tahap 1: LightGBM (phishing vs legitimate)
-Tahap 2: jika phishing -> klasterisasi (Hybrid Self-Attention AE + K-Means, k=2): Phishing Job vs Phishing General
-Jalankan:  shiny run --reload app.py
-"""
+
 import json
 from pathlib import Path
 
@@ -15,20 +10,20 @@ from phishjob_features import feature_vector, normalize_url
 
 BASE = Path(__file__).parent
 
-# ====== Tahap 1: model LightGBM ======
+#Tahap 1: model LightGBM
 booster = lgb.Booster(model_file=str(BASE / "phishjob_lgbm.txt"))
 meta = json.loads((BASE / "phishjob_lgbm_meta.json").read_text(encoding="utf-8"))
 FEATURE_ORDER = meta["features"]
 THRESHOLD = float(meta["threshold"])  # threshold OOF-optimal dari notebook
 
-# ====== Tahap 2: klasterisasi (opsional; aplikasi tetap jalan tanpa folder stage2_export) ======
+#Tahap 2: klasterisasi
 stage2 = None
 try:
     from phishjob_stage2 import Stage2Clusterer
 
     stage2 = Stage2Clusterer(BASE / "stage2_export")
     if stage2.features != FEATURE_ORDER:
-        print("[WARN] Urutan fitur Tahap 2 berbeda dengan meta LightGBM; Tahap 2 memakai urutannya sendiri.")
+        print("[WARN] Urutan fitur Tahap 2 berbeda dengan meta LightGBM, Tahap 2 memakai urutannya sendiri.")
     print("[OK] Model klasterisasi Tahap 2 dimuat.")
 except Exception as e:  # noqa: BLE001
     print(f"[WARN] Tahap 2 tidak aktif: {e!r}")
@@ -50,7 +45,7 @@ def predict_url(raw_url: str) -> dict:
     return {"url": url, "label": "Legitimate", "confidence": 1 - p, "cluster": None}
 
 
-# ====== Helper: ikon SVG (gaya lucide) ======
+
 def icon(inner: str, cls: str = "h-5 w-5"):
     return ui.HTML(
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
@@ -124,10 +119,10 @@ window.addEventListener('load', function(){
 });
 """
 
-# ====== UI (Tailwind CDN) ======
+
 app_ui = ui.TagList(
     ui.head_content(
-        T.title("PhishJob Detection — Phishing Detector for Job Posting Links"),
+        T.title("URL Phishing Detection — Machine Learning-Based Phishing Scanner"),
         T.meta(name="viewport", content="width=device-width, initial-scale=1"),
         T.link(rel="preconnect", href="https://fonts.googleapis.com"),
         T.link(rel="stylesheet", href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"),
@@ -143,7 +138,7 @@ app_ui = ui.TagList(
                 T.div(
                     T.div(icon(ICON_SHIELD_CHECK, "h-5 w-5"),
                           class_="h-10 w-10 rounded-xl bg-primary text-white flex items-center justify-center"),
-                    ui.HTML('<span class="text-xl font-bold">PhishJob <span class="text-primary">Detection</span></span>'),
+                    ui.HTML('<span class="text-xl font-bold">URL Phishing <span class="text-primary">Detection</span></span>'),
                     class_="flex items-center gap-2",
                 ),
                 T.nav(
@@ -160,15 +155,15 @@ app_ui = ui.TagList(
             ),
             class_="sticky top-0 z-50 bg-white/90 backdrop-blur border-b",
         ),
-        # ---------- Home ----------
+        #  Home 
         T.section(
             T.div(
                 T.div(icon(ICON_SHIELD_CHECK, "h-8 w-8"),
                       class_="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-6 text-primary"),
-                T.h1("Detect Job Posting Phishing with ", T.span("Machine Learning", class_="text-primary"),
+                T.h1("Detect Phishing URLs with ", T.span("Machine Learning", class_="text-primary"),
                      class_="text-4xl sm:text-5xl font-bold tracking-tight text-slate-900"),
-                T.p("PhishJob Detection analyzes job posting links in real time using a LightGBM model to spot phishing "
-                    "and fake recruitment URLs, then clusters detected phishing into job-themed and general phishing.",
+                T.p("URL Phishing Detection analyzes URLs using a LightGBM model to identify potential phishing links. "
+                    "Detected phishing URLs are further grouped through exploratory clustering based on their characteristics.",
                     class_="text-lg text-muted mt-4"),
                 T.button("Start Scanning Now", onclick="scrollToSection('detection')",
                          class_="mt-8 h-12 px-8 text-base font-medium rounded-lg bg-primary text-white hover:bg-primary/90 transition"),
@@ -195,17 +190,17 @@ app_ui = ui.TagList(
         T.section(
             T.div(
                 T.div(T.h2("Detection", class_="text-2xl font-bold"),
-                      T.p("Enter a job posting URL to be analyzed by the model", class_="text-sm text-muted mt-1"),
-                      class_="text-center mb-6"),
+                     T.p("Enter a URL to be analyzed by the model", class_="text-sm text-muted mt-1"),
+                class_="text-center mb-6"),
                 T.div(
-                    T.div(T.h3("Job Link Phishing Scanner", class_="font-semibold"),
-                          T.p("Enter a job posting URL below to analyze", class_="text-sm text-muted"),
+                    T.div(T.h3("URL Phishing Scanner", class_="font-semibold"),
+                          T.p("Enter a URL below to analyze", class_="text-sm text-muted"),
                           class_="mb-4"),
                     T.div(
                         T.div(
                             T.span(icon(ICON_SEARCH, "h-4 w-4"),
                                    class_="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"),
-                            T.input(id="url_input", type="text", placeholder="www.linkedin.com/jobs/view/123456",
+                            T.input(id="url_input", type="text", placeholder="https://example.com",
                                     autocomplete="off",
                                     class_="w-full h-12 pl-10 pr-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"),
                             class_="relative flex-1",
@@ -228,6 +223,16 @@ app_ui = ui.TagList(
                         class_="flex flex-wrap items-center gap-2 mt-4 text-xs",
                     ),
                     T.div(
+                        T.p(
+                            "Disclaimer: This application performs general URL phishing "
+                            "detection. Recruitment-related keyword clusters are exploratory "
+                            "and have not been independently verified as job recruitment "
+                            "phishing categories.",
+                            class_="text-xs text-slate-500 leading-relaxed"
+                        ),
+                        class_="mt-4 p-3 rounded-lg bg-amber-50 border border-amber-200"
+                    ),
+                    T.div(
                         ui.HTML('<svg class="animate-spin h-5 w-5 text-primary" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>'),
                         "Analyzing URL...",
                         id="scanning", class_="hidden mt-6 flex items-center justify-center gap-3 py-6 text-sm text-muted",
@@ -240,17 +245,18 @@ app_ui = ui.TagList(
             ),
             id="detection", class_="min-h-[70vh] flex items-center justify-center px-4 py-20",
         ),
-        # ---------- About ----------
+        #  About 
         T.section(
             T.div(
                 T.div(T.h2("About Us", class_="text-2xl font-bold"),
-                      T.p("About the PhishJob Detection project", class_="text-sm text-muted mt-1"),
+                    T.p("About the URL Phishing Detection project", class_="text-sm text-muted mt-1"),
                       class_="text-center mb-8"),
                 T.div(
                     T.div(T.span(icon(ICON_TARGET), class_="text-primary mt-0.5 shrink-0"),
                           T.div(T.p("Project Objective", class_="font-medium text-sm"),
-                                T.p("PhishJob Detection automatically detects phishing links disguised as job postings using a "
-                                    "LightGBM model, then groups detected phishing into job-themed and general phishing clusters.",
+                                T.p("URL Phishing Detection identifies potential phishing URLs using a "
+                                    "LightGBM model, then groups detected phishing URLs through exploratory "
+                                    "unsupervised clustering based on their characteristics.",
                                     class_="text-sm text-muted mt-1")),
                           class_="flex items-start gap-3"),
                     T.div(T.span(icon(ICON_GRAD), class_="text-primary mt-0.5 shrink-0"),
@@ -274,43 +280,62 @@ app_ui = ui.TagList(
 )
 
 
-# ====== Result card: blok jenis phishing (Tahap 2) ======
+# Result card: exploratory cluster profile (Stage 2)
 def cluster_block(cluster: dict):
     is_job = cluster["cluster"] == "job"
     pct = round(cluster["affinity"] * 100, 1)
+
     if is_job:
         wrap, ico_cls, badge = "border-amber-300 bg-amber-50", "text-amber-700", "bg-amber-100 text-amber-800"
-        bar, ico, title = "bg-amber-500", ICON_BRIEFCASE, "Phishing Job"
-        desc = ("This link falls in the job / recruitment phishing cluster — it resembles fake job offers. "
-                "Never submit your CV, ID, or fees to it.")
+        bar, ico, title = "bg-amber-500", ICON_BRIEFCASE, "Keyword-enriched cluster (unverified)"
+        desc = (
+            "This URL is assigned to a cluster showing relatively higher "
+            "recruitment-related keyword enrichment. This does not confirm "
+            "that the URL is associated with job recruitment phishing."
+        )
     else:
         wrap, ico_cls, badge = "border-slate-300 bg-white/70", "text-slate-700", "bg-slate-200 text-slate-800"
-        bar, ico, title = "bg-slate-500", ICON_GLOBE, "Phishing General"
-        desc = "This link falls in the general (non-job) phishing cluster — it is not specifically themed around recruitment."
+        bar, ico, title = "bg-slate-500", ICON_GLOBE, "General cluster"
+        desc = (
+            "This URL is assigned to a cluster showing comparatively lower "
+            "recruitment-related keyword enrichment."
+        )
+
     return T.div(
         T.div(
             T.span(icon(ico, "h-5 w-5"), class_=ico_cls),
             T.div(
-                T.div(T.span("Phishing type", class_="text-xs text-slate-500"),
-                      T.span(title, class_=f"ml-2 text-xs font-semibold rounded-full px-2.5 py-0.5 {badge}")),
+                T.div(
+                    T.span("Exploratory Cluster Profile", class_="text-xs text-slate-500"),
+                    T.span(title, class_=f"ml-2 text-xs font-semibold rounded-full px-2.5 py-0.5 {badge}")
+                ),
                 T.p(desc, class_="text-xs text-slate-600 mt-1"),
             ),
             class_="flex items-start gap-3",
         ),
         T.div(
-            T.div(T.span("Cluster affinity"), T.span(f"{pct}%", class_="font-semibold"),
-                  class_="flex justify-between text-xs text-slate-600 mb-1"),
-            T.div(T.div(class_=f"h-full rounded-full {bar}", style=f"width:{pct}%"),
-                  class_="h-1.5 w-full rounded-full bg-white overflow-hidden"),
+            T.div(
+                T.span("Cluster affinity"),
+                T.span(f"{pct}%", class_="font-semibold"),
+                class_="flex justify-between text-xs text-slate-600 mb-1"
+            ),
+            T.div(
+                T.div(class_=f"h-full rounded-full {bar}", style=f"width:{pct}%"),
+                class_="h-1.5 w-full rounded-full bg-white overflow-hidden"
+            ),
             class_="mt-3",
         ),
-        T.p("Exploratory unsupervised clustering: shows similarity to a cluster, not a verified label.",
-            class_="mt-2 text-[11px] text-slate-400"),
+        T.p(
+            "Exploratory unsupervised clustering: cluster assignment reflects "
+            "relative proximity in the learned feature space, not a verified "
+            "phishing category or probability.",
+            class_="mt-2 text-[11px] text-slate-400"
+        ),
         class_=f"mt-4 rounded-lg border p-3 {wrap}",
     )
 
 
-# ====== Server ======
+#  Server 
 def server(input, output, session):
     @reactive.calc
     @reactive.event(input.scan)
@@ -342,8 +367,12 @@ def server(input, output, session):
         box = "border-red-200 bg-red-50" if is_phish else "border-emerald-200 bg-emerald-50"
         title = "text-red-700" if is_phish else "text-emerald-700"
         bar = "bg-red-500" if is_phish else "bg-emerald-500"
-        msg = ("This job link looks like phishing. Do not enter personal data or credentials."
-               if is_phish else "This job link appears to be safe based on the model's analysis.")
+        msg = (
+            "This URL has been classified as phishing by the model. "
+            "Avoid entering sensitive information on this website."
+            if is_phish else
+            "This URL has been classified as legitimate by the model."
+        )
 
         return ui.TagList(stamp, T.div(
             T.div(
