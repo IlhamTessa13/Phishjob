@@ -299,7 +299,7 @@ app_ui = ui.TagList(
                           class_="flex items-start gap-3"),
                     T.div(T.span(icon(ICON_CODE), class_="text-primary mt-0.5 shrink-0"),
                           T.div(T.p("Source Code", class_="font-medium text-sm"),
-                                T.p("https://github.com/IlhamTessa13/phishing-detector", class_="text-sm text-muted mt-1")),
+                                T.p("https://github.com/IlhamTessa13/Phishjob", class_="text-sm text-muted mt-1")),
                           class_="flex items-start gap-3"),
                     class_="bg-white rounded-2xl border shadow-sm p-6 space-y-4",
                 ),
