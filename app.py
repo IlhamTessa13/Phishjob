@@ -215,7 +215,7 @@ app_ui = ui.TagList(
                         T.button("Phishing", class_="px-3 py-1.5 rounded-full bg-red-50 text-red-600 font-medium hover:bg-red-100",
                                  onclick="quickTest('http://secure-careers-apply.verify-account.xyz/job-offer.php?id=123456')"),
                         T.button("Safe", class_="px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 font-medium hover:bg-emerald-100",
-                                 onclick="quickTest('https://www.linkedin.com/jobs/')"),
+                                 onclick="quickTest('https://stis.ac.id')"),
                         T.button("Suspicious", class_="px-3 py-1.5 rounded-full bg-amber-50 text-amber-600 font-medium hover:bg-amber-100",
                                  onclick="quickTest('http://192.168.1.1/apply-now.html')"),
                         T.button("Short URL", class_="px-3 py-1.5 rounded-full bg-blue-50 text-primary font-medium hover:bg-blue-100",
